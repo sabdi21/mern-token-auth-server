@@ -2,6 +2,7 @@
 let express = require('express')
 let cors = require('cors')
 let morgan = require('morgan')
+// let rowdylogger = require('rowdy-logger')
 
 //instantiate app
 let app = express()
@@ -14,8 +15,9 @@ app.use(express.json({ limit: '30mb' }))
 
 //Routes
 app.use('/auth', require('./controllers/auth'))
+
 app.get('*', (req, res) => {
     res.status(404).send({ message: 'Not Found' })
 })
 
-app.listen(process.env.PORT || 3000)
+app.listen(process.env.PORT || 9000)
