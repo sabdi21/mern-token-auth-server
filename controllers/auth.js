@@ -3,8 +3,33 @@ let jwt = require('jsonwebtoken')
 let db = require('../models')
 require('dotenv').config()
 
+//POST /auth.login (find and validate user; send token)
 router.post('/login', (req, res) => {
-    res.send('STUB - post /auth/login')
+    //find the user by their email in the database
+    db.User.findOne({
+        email: req.body.email
+    })
+    .then(user => {
+        //Make suer we have a suer and that the user has a password
+        if (!user || !user.password) {//if user and password is false (meaning no match)
+        return res.status(404).send({ message: 'User not found'})
+        }
+        //Yay!! -WE GOT A USER. Lets check their password.
+        if(!user.isAuthenticated(req.body.password)) { //if password email is wrong or misspelled
+            //Invaled credentials (email, password)
+            return res.status(406).send({ message: 'Not acceptable! Invalid Credentials'})
+        }
+        let token = jwt.sign(user.toJSON(), process.env.JWT_SECRET, {
+            expiresIn: 60 * 60 * 8 // 8 hours in seconds to expire
+        })
+           
+        res.send({ token })
+    })
+    .catch( err => {
+        //If something went wrong here, it's likely an issue with the DB or DB setup. or a typo
+        console.log('Error in POST /auth/login', err)
+        res.status(503).send({ message: 'Something went wrong, pobably DB related. Or you made a typo.' })
+    })
 })
 
 router.post('/signup', (req, res) => {
